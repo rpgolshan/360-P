@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 
-public class PSearch implements Callable{
+public class PSearch implements Callable<Integer>{
   int start;
   int end;
   int[] array;
