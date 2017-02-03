@@ -1,5 +1,5 @@
-//UT-EID=
-
+//UT-EID=	Rob Golshan: rpg499
+//			Jonathan Friesen: jtf698
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -23,7 +23,6 @@ public class PSearch implements Callable{
 	int div = (A.length/numThreads) + ((A.length % numThreads == 0)?0:1);
 	int index = 0;
     for(int i = 0;i<numThreads;i++){
-    	
     	futures.add(threadPool.submit(new PSearch(A,index,Math.min(index+div,A.length),k)));
     	index += div;
     }
@@ -34,11 +33,9 @@ public class PSearch implements Callable{
 				return y;
 			}
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
     }
     return -1; // if not found

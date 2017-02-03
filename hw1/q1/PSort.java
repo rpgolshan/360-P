@@ -1,4 +1,5 @@
-//UT-EID=
+//UT-EID=	Rob Golshan: rpg499
+//			Jonathan Friesen: jtf698
 
 
 import java.util.*;
@@ -17,7 +18,6 @@ public class PSort implements Runnable{
 		this.Begin = begin;
 		this.End = end;
 		this.index = partition(a,begin,end-1);
-		
 	}
 	
 	public int partition (int[] a, int begin, int end){
@@ -47,11 +47,9 @@ public class PSort implements Runnable{
 		try{
 			PSort s = new PSort(A, begin, end);
 			Future<?> s1 = threadPool.submit(s);
-			s1.get();
-			while(!s1.isDone()){System.out.println("test3");};
-			
+			s1.get();		
 		} catch(Exception e){
-			System.err.println(e);
+			//System.err.println(e);
 		}
 	}
   
@@ -71,7 +69,6 @@ public class PSort implements Runnable{
 
 	@Override
 	public void run() {
-		//System.out.println("test " + Begin + " " + End);
 		int length = End - Begin;
 		try{
 			if(length <= 4){
@@ -83,16 +80,9 @@ public class PSort implements Runnable{
 				if(index<End){
 					Future<?> f2 =  threadPool.submit(new PSort(A,index,End));
 				}
-//				Future<?> f1 =  threadPool.submit(new PSort(A,Begin,length/2));
-//				Future<?> f2 =  threadPool.submit(new PSort(A,length/2+1,End-1));
-//				f1.get();
-//				f2.get();
-				
 			}
 		} catch (Exception e){
-			//System.out.println("error1");
-			System.out.println(e);
-			//System.out.flush();
+			//System.out.println(e);
 		}
 	}
 }
