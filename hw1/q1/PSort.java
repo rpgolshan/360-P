@@ -74,12 +74,18 @@ public class PSort implements Runnable{
 			if(length <= 4){
 				insertSort(A,Begin,End);	
 			}else{
+                Future<?> f1 = null;
 				if(Begin<index-1){
-					Future<?> f1 =  threadPool.submit(new PSort(A,Begin,index-1));
+                    f1 =  threadPool.submit(new PSort(A,Begin,index-1));
 				}
+                Future<?> f2 = null;
 				if(index<End){
-					Future<?> f2 =  threadPool.submit(new PSort(A,index,End));
+				    f2 =  threadPool.submit(new PSort(A,index,End));
 				}
+				if(f1 != null)
+                    f1.get();
+				if(f2 != null)
+                    f2.get();
 			}
 		} catch (Exception e){
 			//System.out.println(e);
