@@ -103,6 +103,21 @@ public class Server extends Thread{
         return "Order " + orderNum + " is canceled";
     }
 
+    public synchronized String search(String user) {
+        ArrayList<Order> perUserList = userList.get(user);
+        String error = "No order found for " + user;
+        if (perUserList == null) 
+            return error;
+        String total = "";
+        for (Order o : perUserList) {
+            if (!o.canceled) {
+               total += o.orderNum + ", " + o.product + ", " + o.quantity + "\n";
+            }
+        }
+        if (total == "") return error;
+        return total;
+    }
+
   public String parseInput(String inMessage){
 	  //process client request
 	  String[] request = inMessage.split(" ");
