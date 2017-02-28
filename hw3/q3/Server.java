@@ -1,24 +1,125 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.net.ServerSocket;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class Server {
-    private Hashtable<String, Integer> ht = new Hashtable<String, Integer>();
-    public Server() {
-    } 
+public class Server extends Thread{
+    public static ReentrantLock lock = new ReentrantLock();
+    private boolean isTcp = true;
+    private int port;
+    private static Hashtable<String, Integer> ht = new Hashtable<String, Integer>();
+    private static Hashtable<String, ArrayList<Order>> userList = new Hashtable<String, ArrayList<Order>>();
+    private static ArrayList<Order> orderList = new ArrayList<Order>();
+    private static int orderId = 1;
+
+    public class Order {
+        public String user;
+        public String product; 
+        public int quantity;
+        public int orderNum;
+        public boolean canceled;
+        
+        public Order(String u, String p, int q, int oNum) {
+            user = u;
+            product = p;
+            quantity = q;
+            orderNum = oNum;
+            canceled = false;
+        }
+         
+    }
+    public Server(boolean tcp, int p) {
+        isTcp = tcp; 
+        port = p;
+    }
+
+    public void run() {
+        try (ServerSocket serverSocket = new ServerSocket(port)){
+            while (true) {
+                new ServerMultiThread(serverSocket.accept());  
+            }
+            
+        } catch (Exception e){
+            e.printStackTrace();
+            System.exit(1); 
+        }
+    }
 
     public int increment(String product) {
         int current = ht.get(product); 
         current++;
         return ht.put(product, current);
     }
-    public int set(String product, int amount) {
-        return ht.put(product, amount); 
+    public void set(String product, int amount) {
+        ht.put(product, amount); 
     }
 
     public int get(String product) {
         return ht.get(product);  
     }
+
+    public String toString() {
+        return ht.toString(); 
+    }
+
+    public void processInput() {
+             
+    }
+
+    public synchronized String purchase(String user, String product, int quantity) {
+        Integer current = ht.get(product);
+        if (current == null) {
+            return "Not Available - We do not sell this product"; 
+        }
+        if (current < quantity) {
+            return "Not Available - Not Enough " + product; 
+        }  
+        ht.put(product, current - quantity);
+
+        Order order = new Order(user, product, quantity, orderId);
+        orderId++;
+        String s = orderId + " " + user + " " + product + " " + quantity;
+        ArrayList<Order> perUserList = userList.get(user);
+        if (perUserList == null) {
+            perUserList = new ArrayList<Order>();
+        }
+        perUserList.add(order);
+        userList.put(user, perUserList);
+        return s;
+    }
+
+    public synchronized String cancel(int orderNum) {
+        if (orderNum >= orderList.size()) {
+            return orderNum + " not found, no such order"; 
+        } 
+        Order o = orderList.get(orderNum); 
+        o.canceled = true;
+
+        int current = ht.get(o.product);
+        ht.put(o.product, current + o.quantity);
+
+        return "Order " + orderNum + " is canceled";
+    }
+
+  public String parseInput(String inMessage){
+	  //process client request
+	  String[] request = inMessage.split(" ");
+	  String outMessage = "";
+	  if(request[0].equals("Purchase")){
+		  outMessage = "purchase";
+	  }else if(request[0].equals("cancel")){
+		  outMessage = "cancel";
+	  }else if(request[0].equals("search")){
+		  outMessage = "search";
+	  }else if(request[0].equals("list")){
+		  outMessage = "list";
+	  }	  
+	  
+	return outMessage;
+	  
+  }
 
   public static void main (String[] args) {
     int tcpPort;
@@ -35,7 +136,8 @@ public class Server {
     udpPort = Integer.parseInt(args[1]);
     String fileName = args[2];
 
-    Server ser = new Server();
+    Server serTcp = new Server(true, tcpPort);
+    Server serUdp = new Server(false, udpPort);
     // parse the inventory file
 
     try {
@@ -43,17 +145,20 @@ public class Server {
         String line;
         while ((line = reader.readLine()) != null) {
             String[] s = line.split(" ");
-            if (s.length < 2) { 
-                System.out.println("Incorrect ammount of variables");
-                System.exit(1);
+            if (s.length >= 2) { 
+                serTcp.set(s[0], Integer.parseInt(s[1]));
             }
-            ser.set(s[0], Integer.parseInt(s[1]));
         }
         reader.close();
     } catch(Exception e){
         e.printStackTrace();
     }
+
+
     // TODO: handle request from clients
     
+//    System.out.println(ser.toString());
+    serTcp.start();
+    serUdp.start();
   }
 }
