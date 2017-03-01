@@ -1,0 +1,35 @@
+#!/bin/bash -x
+
+javac Server.java Client.java
+
+java Server 4444 5555 inventory.txt &
+sleep 1
+id=$!
+cat <<EOF | java Client localhost 4444 5555 & 
+list
+purchase Jon phone 10
+list
+exit
+EOF
+
+sleep 5
+
+echo "******Expected Output******
+phone 20
+laptop 15
+camera 10
+ps4 17
+xbox 8
+Your order has been placed, 1 Jon phone 10
+phone 10
+laptop 15
+camera 10
+ps4 17
+xbox 8
+"
+
+kill $id 
+
+
+
+

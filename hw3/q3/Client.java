@@ -60,11 +60,24 @@ public class Client {
       else if (tokens[0].equals("purchase")) {
         // TODO: send appropriate command to the server and display the
         // appropriate responses form the server
+		int valid = 1;
+		try{
+			int tmp = Integer.ParseInt(tokens[3]);
+			if(tmp < 1){
+				valid = 0;	
+			}
+		} catch (ArrayIndexOutOfBoundsException e){
+			valid = 0;
+		}
+	if(valid){
     	  if(transferType == 'T'){	  
   		  	returnMessage = tcpSendandGet("purchase " + tokens[1] +" "+ tokens[2]+" "+tokens[3]);
     	  }else{
     		  
     	  }
+	}else{
+		returnMessage = "please enter a quantity greater than zero!";
+	}
       } else if (tokens[0].equals("cancel")) {
         // TODO: send appropriate command to the server and display the
         // appropriate responses form the server
@@ -89,6 +102,8 @@ public class Client {
     	  }else{
     		  
     	  }
+      } else if (tokens[0].equals("exit")) {
+   	break; 
       } else {
         System.out.println("ERROR: No such command");
     
