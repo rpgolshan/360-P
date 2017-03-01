@@ -64,10 +64,6 @@ public class Server extends Thread{
         return ht.toString(); 
     }
 
-    public void processInput() {
-             
-    }
-
     public synchronized String purchase(String user, String product, int quantity) {
         Integer current = ht.get(product);
         if (current == null) {
@@ -128,21 +124,39 @@ public class Server extends Thread{
 
   public String parseInput(String inMessage){
 	  //process client request
-	  String[] request = inMessage.split(" ");
+	  String[] request = inMessage.split("\\s+");
 	  String outMessage = "";
 	  if(request[0].equals("Purchase")){
-		  outMessage = "purchase";
+		  try{
+			String username = request[1];
+		  	String product = request[2];
+		  	int quantity = Integer.parseInt(request[3]);
+		  	outMessage = purchase(username, product, quantity);
+		  } catch(NullPointerException | NumberFormatException f){
+			  //purchase message didn't have all the fields defined or defined correctly
+		  }
 	  }else if(request[0].equals("cancel")){
-		  outMessage = "cancel";
+		  try{
+			  int order = Integer.parseInt(request[1]);
+			  outMessage = cancel(order);
+		  } catch(NullPointerException | NumberFormatException f){
+			  //cancel message didn't specify an order or didn't give an integer
+		  }
 	  }else if(request[0].equals("search")){
-		  outMessage = "search";
+		  try{
+			  String username = request[1];
+			  outMessage = search(username);
+		  }catch(NullPointerException | NumberFormatException f){
+			  //search message did not specify a username
+		  }
 	  }else if(request[0].equals("list")){
-		  outMessage = "list";
-	  }	  
-	  
+		  outMessage = list();
+	  }
+
 	return outMessage;
-	  
+
   }
+
 
   public static void main (String[] args) {
     int tcpPort;
