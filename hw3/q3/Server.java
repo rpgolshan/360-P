@@ -37,6 +37,7 @@ public class Server extends Thread{
 
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port)){
+            ServerMultiThread.server = this;
             while (true) {
                 new ServerMultiThread(serverSocket.accept()).start();  
             }
@@ -75,7 +76,7 @@ public class Server extends Thread{
         ht.put(product, current - quantity);
 
         Order order = new Order(user, product, quantity, orderId);
-        orderId++;
+        orderList.add(order);
         String s = orderId + " " + user + " " + product + " " + quantity;
         ArrayList<Order> perUserList = userList.get(user);
         if (perUserList == null) {
@@ -83,14 +84,15 @@ public class Server extends Thread{
         }
         perUserList.add(order);
         userList.put(user, perUserList);
+        orderId++;
         return s;
     }
 
     public synchronized String cancel(int orderNum) {
-        if (orderNum >= orderList.size()) {
+        if (orderNum > orderList.size()) {
             return orderNum + " not found, no such order"; 
         } 
-        Order o = orderList.get(orderNum); 
+        Order o = orderList.get(orderNum - 1); 
         o.canceled = true;
 
         int current = ht.get(o.product);
@@ -126,7 +128,7 @@ public class Server extends Thread{
 	  //process client request
 	  String[] request = inMessage.split("\\s+");
 	  String outMessage = "";
-	  if(request[0].equals("Purchase")){
+	  if(request[0].equals("purchase")){
 		  try{
 			String username = request[1];
 		  	String product = request[2];

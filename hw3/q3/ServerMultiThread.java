@@ -17,11 +17,15 @@ public class ServerMultiThread extends Thread {
     }
     public void run() {
        try( 
-               PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+               PrintWriter out = new PrintWriter(socket.getOutputStream(),true);
 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));)
        {
-         String output = server.parseInput(reader.readLine());
-         out.println(output);
+           String input;
+           while ((input = reader.readLine()) != null) {
+             String output = server.parseInput(input);
+             out.println(output);
+             out.println("DONE");
+           }
        
          socket.close();
        } catch(Exception e){

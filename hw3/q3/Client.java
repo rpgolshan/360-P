@@ -38,7 +38,6 @@ public class Client {
     	System.out.print("");
     }
     Scanner sc = new Scanner(System.in);
-    System.out.println("test");
     while(sc.hasNextLine()) {
       String cmd = sc.nextLine();
       String[] tokens = cmd.split(" ");
@@ -57,7 +56,6 @@ public class Client {
     	}else{
     		System.out.println("Invalid mode! please use 'T' for TCP or 'U' for UDP.\n");
     	}
-    	System.out.println(returnMessage);
       }
       else if (tokens[0].equals("purchase")) {
         // TODO: send appropriate command to the server and display the
@@ -93,8 +91,11 @@ public class Client {
     	  }
       } else {
         System.out.println("ERROR: No such command");
+    
       }
+System.out.println(returnMessage );
     }
+sc.close();
   }
   
   static String udpSendandGet(String message){
@@ -122,7 +123,11 @@ static String tcpSendandGet(String message){
 		DataOutputStream outToServer = new DataOutputStream(TCPclientSocket.getOutputStream());
 		outToServer.writeBytes(message + "\n");
 		BufferedReader inFromServer = new BufferedReader(new InputStreamReader(TCPclientSocket.getInputStream()));
-		inMessage = inFromServer.readLine();
+        String in;
+       while ((in = inFromServer.readLine()) != null) {
+           if (in.equals("DONE")) break;
+            inMessage += in + "\n"; 
+       }
 	} catch(IOException e){
 		return inMessage;
 	}
