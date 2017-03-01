@@ -44,7 +44,7 @@ public class UDPServer extends Server implements Runnable {
                 UDPSocket.send(sendPacket);
 				System.out.println(outMessage);
 			} catch (IOException e) {
-	            
+	            connected =false;
 			}		
 		}
 		UDPSocket.close();

@@ -38,56 +38,59 @@ public class Client {
     	System.out.print("");
     }
     Scanner sc = new Scanner(System.in);
-    /*
-    try {
-    	DataOutputStream outToServer = new DataOutputStream(TCPclientSocket.getOutputStream());
-		outToServer.writeBytes("connect\n");
-		TimeUnit.SECONDS.sleep(1);
-		outToServer.close();
-	} catch (IOException | InterruptedException e) {
-		e.printStackTrace();
-	}
-    */
+    System.out.println("test");
     while(sc.hasNextLine()) {
       String cmd = sc.nextLine();
       String[] tokens = cmd.split(" ");
-
+      String returnMessage = "";
+      
       if (tokens[0].equals("setmode")) {
+    	  
         // TODO: set the mode of communication for sending commands to the server 
-        // and display the name of the protocol that will be used in future
-    	  String returnMessage = "";
+        // and display the name of the protocol that will be used in future  	  
     	if(tokens[1].equals("T")){
-    		
-    		if(transferType=='T'){
-    			returnMessage = tcpSendandGet("setmode T");
-    		}else{
-    			returnMessage = udpSendandGet("setmode T");
-    		}
     		transferType = 'T';
+    		returnMessage = "communication set to TCP";
     	}else if (tokens[1].equals("U")){
-    		if(transferType=='T'){
-    			returnMessage = tcpSendandGet("setmode U");
-    		}else{
-    			returnMessage = udpSendandGet("setmode U");
-    		}	
     		transferType = 'U';
+    		returnMessage = "communication seet to UDP";
     	}else{
-    		System.out.println("Invalid mode! please use 'T' for TCP or 'U' for UDP.");
+    		System.out.println("Invalid mode! please use 'T' for TCP or 'U' for UDP.\n");
     	}
     	System.out.println(returnMessage);
       }
       else if (tokens[0].equals("purchase")) {
         // TODO: send appropriate command to the server and display the
         // appropriate responses form the server
+    	  if(transferType == 'T'){	  
+  		  	returnMessage = tcpSendandGet("purchase " + tokens[1] +" "+ tokens[2]+" "+tokens[3]);
+    	  }else{
+    		  
+    	  }
       } else if (tokens[0].equals("cancel")) {
         // TODO: send appropriate command to the server and display the
         // appropriate responses form the server
+    	  if(transferType == 'T'){
+    		  returnMessage = tcpSendandGet("cancel " + tokens[1]);
+    	  }else{
+    		  
+    	  }
       } else if (tokens[0].equals("search")) {
         // TODO: send appropriate command to the server and display the
         // appropriate responses form the server
+    	  if(transferType == 'T'){
+    		  returnMessage = tcpSendandGet("search " + tokens[1]);
+    	  }else{
+    		  
+    	  }
       } else if (tokens[0].equals("list")) {
         // TODO: send appropriate command to the server and display the
         // appropriate responses form the server
+    	  if(transferType == 'T'){
+    		  returnMessage = tcpSendandGet("list");
+    	  }else{
+    		  
+    	  }
       } else {
         System.out.println("ERROR: No such command");
       }

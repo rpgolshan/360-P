@@ -92,26 +92,34 @@ public class Server{
 	  //process client request
 	  String[] request = inMessage.split("\\s+");
 	  String outMessage = "";
-	  if(request[0].equals("setmode")){
-		  /*
-		   * IS SETMODE UNIQUE TO CLIENT OR DOES EVERY CLIENT SWITCH UDP/TCP IF ONE CLIENT CHANGES IT?
-		   */
-		  outMessage = "Set to communicate with server using ";
-		  if(request[1].equals("T")){	
-			  
-			  outMessage += "TCP";
-		  }else if(request[1].equals("U")){
-
-			  outMessage += "UDP";
+	  if(request[0].equals("Purchase")){
+		  try{
+			String username = request[1];		  
+		  	String product = request[2];
+		  	int quantity = Integer.parseInt(request[3]);
+		  	//outMessage = purchase(username, product, quantity);
+		  	outMessage = "purchase";
+		  } catch(NullPointerException | NumberFormatException f){
+			  //purchase message didn't have all the fields defined or defined correctly
 		  }
-	  } else if(request[0].equals("Purchase")){
-		  outMessage = "purchase";
 	  }else if(request[0].equals("cancel")){
-		  outMessage = "cancel";
+		  try{
+			  int order = Integer.parseInt(request[1]);
+			  //outMessage = cancel(order);
+			  outMessage = "cancel";
+		  } catch(NullPointerException | NumberFormatException f){
+			  //cancel message didn't specify an order or didn't give an integer
+		  }
 	  }else if(request[0].equals("search")){
-		  outMessage = "search";
+		  try{
+			  String username = request[1];
+			  //outMessage = search(username);
+			  outMessage = "search";
+		  }catch(NullPointerException | NumberFormatException f){
+			  //search message did not specify a username
+		  }
 	  }else if(request[0].equals("list")){
-		  outMessage = "list";
+		  //outMessage = list();
 	  }	  
 	  
 	return outMessage;
