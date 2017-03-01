@@ -51,6 +51,7 @@ public class Server{
     String fileName = args[2];
 
     // parse the inventory file
+    /*
     Map<String,Integer> inventory = new HashMap<String, Integer>();
     try {
     	String strLine = "";
@@ -62,6 +63,7 @@ public class Server{
     } catch (IOException e) {
 		e.printStackTrace();
 	}
+	*/
     // TODO: handle request from clients
     /*
      * whenever a new client connects, start up a new thread to take care of the cleint requests 
@@ -84,7 +86,7 @@ public class Server{
     	
     }
 
-    System.out.println("failure");
+    System.out.println("test2");
   }
   
   /******SYNCED MTHODS TO CHANGE INVENTORY*************/

@@ -19,6 +19,7 @@ public class Client {
     static int udpPort;
 	
   public static void main (String[] args) {
+	  System.out.println("test");
     char transferType = 'T';
     if (args.length != 3) {
       System.out.println("ERROR: Provide 3 arguments");
@@ -30,7 +31,7 @@ public class Client {
 
     hostAddress = args[0];
     tcpPort = Integer.parseInt(args[1]);
-    udpPort = Integer.parseInt(args[2]);
+    udpPort = Integer.parseInt(args[2]); 
     try{
     	TCPclientSocket = new Socket(hostAddress, tcpPort);
     	UDPclientSocket = new DatagramSocket();
@@ -38,11 +39,11 @@ public class Client {
     	System.out.print("");
     }
     Scanner sc = new Scanner(System.in);
-    System.out.println("test");
+   
     while(sc.hasNextLine()) {
       String cmd = sc.nextLine();
       String[] tokens = cmd.split(" ");
-      String returnMessage = "";
+      String returnMessage = "what";
       
       if (tokens[0].equals("setmode")) {
     	  
@@ -91,9 +92,12 @@ public class Client {
     	  }else{
     		  
     	  }
-      } else {
+      } else if(tokens[0].equals("exit")){
+    	  break;
+      }else{
         System.out.println("ERROR: No such command");
       }
+      System.out.println(returnMessage);
     }
   }
   

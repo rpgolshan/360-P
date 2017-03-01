@@ -1,0 +1,15 @@
+#!/bin/bash
+
+javac Server.java
+javac Client.java
+echo "hello0"
+java Server 4444 5555 inventory.txt &
+
+sleep 1
+echo "hello1"
+java Client localhost 4444 5555 & << EOF
+setmode T
+EOF
+echo "hello2"
+java Client localhost 4444 5555 &
+
