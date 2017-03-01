@@ -118,6 +118,14 @@ public class Server extends Thread{
         return total;
     }
 
+    public synchronized String list() {
+        String s = ""; 
+        for (String p : ht.keySet()) {
+            s += p + " " + ht.get(p) + "\n"; 
+        }
+        return s;
+    }
+
   public String parseInput(String inMessage){
 	  //process client request
 	  String[] request = inMessage.split(" ");
