@@ -1,5 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -36,17 +38,32 @@ public class Server extends Thread{
     }
 
     public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(port)){
-            ServerMultiThread.server = this;
-            while (true) {
-                new ServerMultiThread(serverSocket.accept()).start();  
+        ServerMultiThread.server = this;
+        if (isTcp) {
+             try (ServerSocket serverSocket = new ServerSocket(port)){
+                while (true) {
+                    new ServerMultiThread(serverSocket.accept()).start();  
+                }
+                
+            } catch (Exception e){
+                e.printStackTrace();
+                System.exit(1); 
             }
-            
-        } catch (Exception e){
-            e.printStackTrace();
-            System.exit(1); 
+
+        } else {
+            try (DatagramSocket serverSocket = new DatagramSocket(port)) 
+            {
+                while (true) {
+                    byte[] buff = new byte[4096];
+                    DatagramPacket packet = new DatagramPacket(buff, 4096);
+                    serverSocket.receive(packet);
+                    new ServerMultiThread(serverSocket, packet, buff).start();
+                }
+            } catch(Exception e){
+                e.printStackTrace();
+            }  
         }
-    }
+   }
 
     public int increment(String product) {
         int current = ht.get(product); 
