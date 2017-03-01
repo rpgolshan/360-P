@@ -38,7 +38,7 @@ public class Server extends Thread{
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port)){
             while (true) {
-                new ServerMultiThread(serverSocket.accept());  
+                new ServerMultiThread(serverSocket.accept()).start();  
             }
             
         } catch (Exception e){
