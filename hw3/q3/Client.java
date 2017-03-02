@@ -44,9 +44,6 @@ public class Client {
       String returnMessage = "";
       
       if (tokens[0].equals("setmode")) {
-    	  
-        // TODO: set the mode of communication for sending commands to the server 
-        // and display the name of the protocol that will be used in future  	  
     	if(tokens[1].equals("T")){
     		transferType = 'T';
     		returnMessage = "communication set to TCP";
@@ -58,37 +55,31 @@ public class Client {
     	}
       }
       else if (tokens[0].equals("purchase")) {
-        // TODO: send appropriate command to the server and display the
-        // appropriate responses form the server
     	  if(transferType == 'T'){	  
   		  	returnMessage = tcpSendandGet("purchase " + tokens[1] +" "+ tokens[2]+" "+tokens[3]);
     	  }else{
-    		  
+  		  	returnMessage = udpSendandGet("purchase " + tokens[1] +" "+ tokens[2]+" "+tokens[3]);
     	  }
       } else if (tokens[0].equals("cancel")) {
-        // TODO: send appropriate command to the server and display the
-        // appropriate responses form the server
     	  if(transferType == 'T'){
     		  returnMessage = tcpSendandGet("cancel " + tokens[1]);
     	  }else{
-    		  
+    		  returnMessage = udpSendandGet("cancel " + tokens[1]);
     	  }
       } else if (tokens[0].equals("search")) {
-        // TODO: send appropriate command to the server and display the
-        // appropriate responses form the server
     	  if(transferType == 'T'){
     		  returnMessage = tcpSendandGet("search " + tokens[1]);
     	  }else{
-    		  
+    		  returnMessage = udpSendandGet("search " + tokens[1]);
     	  }
       } else if (tokens[0].equals("list")) {
-        // TODO: send appropriate command to the server and display the
-        // appropriate responses form the server
     	  if(transferType == 'T'){
     		  returnMessage = tcpSendandGet("list");
     	  }else{
-    		  
+              returnMessage = udpSendandGet("list");
     	  }
+      } else if (tokens[0].equals("exit")) {
+          break;
       } else {
         System.out.println("ERROR: No such command");
     
