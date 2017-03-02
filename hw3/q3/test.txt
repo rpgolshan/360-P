@@ -1,0 +1,26 @@
+#!/bin/bash -x
+
+#javac Server.java Client.java
+#java Server 4444 5555 inventory.txt &
+#
+#sleep 1
+#echo "hello1"
+java Server 4444 5555 inventory.txt &
+id=$!
+cat <<EOF | java Client localhost 4444 5555 &
+
+exit
+EOF
+
+
+cat <<EOF | java Client localhost 4444 5555 &
+
+exit
+EOF
+
+sleep 5
+kill $id 
+#echo "hello2"
+#java Client localhost 4444 5555 & 
+#
+

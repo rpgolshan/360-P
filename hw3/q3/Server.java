@@ -88,7 +88,7 @@ public class Server extends Thread{
             return "Not Available - We do not sell this product"; 
         }
         if (current < quantity) {
-            return "Not Available - Not Enough " + product; 
+            return "Not Available - Not enough items"; 
         }  
         ht.put(product, current - quantity);
 
@@ -102,7 +102,7 @@ public class Server extends Thread{
         perUserList.add(order);
         userList.put(user, perUserList);
         orderId++;
-        return s;
+        return "Your order has been placed, " + s;
     }
 
     public synchronized String cancel(int orderNum) {
@@ -171,9 +171,7 @@ public class Server extends Thread{
 	  }else if(request[0].equals("list")){
 		  outMessage = list();
 	  }
-
 	return outMessage;
-
   }
 
 

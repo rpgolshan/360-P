@@ -1,0 +1,93 @@
+#!/bin/bash -x
+
+javac Server.java Client.java
+
+java Server 4444 5555 inventory.txt &
+sleep 1
+id=$!
+cat <<EOF | java Client localhost 4444 5555 & 
+setmode U
+purchase alex1 camera 1
+purchase alex1 camera 1
+purchase alex1 camera 1
+purchase alex1 camera 1
+purchase alex1 camera 1
+purchase alex1 camera 1
+purchase alex1 camera 1
+purchase alex1 camera 1
+exit
+EOF
+
+cat <<EOF | java Client localhost 4444 5555 & 
+setmode U
+purchase alex2 camera 1
+purchase alex2 camera 1
+purchase alex2 camera 1
+purchase alex2 camera 1
+purchase alex2 camera 1
+purchase alex2 camera 1
+purchase alex2 camera 1
+purchase alex2 camera 1
+exit
+EOF
+
+cat <<EOF | java Client localhost 4444 5555 & 
+setmode T
+purchase alex3 camera 1
+purchase alex3 camera 1
+purchase alex3 camera 1
+purchase alex3 camera 1
+purchase alex3 camera 1
+purchase alex3 camera 1
+purchase alex3 camera 1
+purchase alex3 camera 1
+exit
+EOF
+
+sleep 5
+
+cat <<EOF | java Client localhost 4444 5555  
+list
+search alex1
+search alex2
+search alex3
+exit
+EOF
+
+echo "******Expected End Result******
+Your order has been placed, 1 alex[x] camera 1
+Your order has been placed, 2 alex[x] camera 1
+Your order has been placed, 3 alex[x] camera 1
+Your order has been placed, 4 alex[x] camera 1
+Your order has been placed, 5 alex[x] camera 1
+Your order has been placed, 6 alex[x] camera 1
+Your order has been placed, 7 alex[x] camera 1
+Your order has been placed, 8 alex[x] camera 1
+Your order has been placed, 9 alex[x] camera 1
+Your order has been placed, 10 alex[x] camera 1
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+phone 20
+ps4 17
+camera 0
+laptop 15
+xbox 8
+"
+
+kill $id 
+
+
+
+

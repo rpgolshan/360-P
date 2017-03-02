@@ -1,0 +1,58 @@
+#!/bin/bash -x
+
+javac Server.java Client.java
+
+java Server 4444 5555 inventory.txt &
+sleep 1
+id=$!
+cat <<EOF | java Client localhost 4444 5555 & 
+setmode T
+list
+purchase Jon phone 5
+purchase Jon laptop 5
+purchase Jon camera 5
+purchase Jon ps4 5
+purchase Jon xbox 5
+purchase Jon pizza 5
+purchase Jon phone 16
+purchase Jon xbox 0
+purchase Jon ps4 -50
+search Jon
+list
+exit
+EOF
+
+sleep 5
+
+echo "******Expected Output******
+phone 20
+laptop 15
+camera 10
+ps4 17
+xbox 8
+Your order has been placed, 1 Jon phone 5
+Your order has been placed, 2 Jon laptop 5
+Your order has been placed, 3 Jon camera 5
+Your order has been placed, 4 Jon ps4 5
+Your order has been placed, 5 Jon xbox 5
+Not Available - We do not sell this product
+Not Available - Not enough items
+Not a valid command
+not a valid command
+1, phone, 5
+2, laptop, 5
+3, camera, 5
+4, ps4, 5
+5, xbox, 5
+phone 15
+laptop 10
+camera 5
+ps4 12
+xbox 3
+"
+
+kill $id 
+
+
+
+

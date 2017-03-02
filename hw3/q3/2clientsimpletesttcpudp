@@ -1,0 +1,43 @@
+#!/bin/bash -x
+
+javac Server.java Client.java
+
+java Server 4444 5555 inventory.txt &
+sleep 1
+id=$!
+cat <<EOF | java Client localhost 4444 5555 & 
+setmode T
+purchase jon xbox 5
+exit
+EOF
+
+cat <<EOF | java Client localhost 4444 5555 & 
+setmode U
+purchase rob ps4 12
+exit
+EOF
+
+sleep 5
+
+cat <<EOF | java Client localhost 4444 5555  
+list
+exit
+EOF
+
+echo "******Expected End Result******
+communication set to TCP
+communication set to UDP
+your order has been placed, A jon xbox 5
+your order has been placed, B rob ps4 12
+phone 20
+ps4 5
+camera 10
+laptop 15
+xbox 3
+"
+
+kill $id 
+
+
+
+

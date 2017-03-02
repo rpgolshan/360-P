@@ -1,0 +1,60 @@
+#!/bin/bash -x
+
+javac Server.java Client.java
+
+java Server 4444 5555 inventory.txt &
+sleep 1
+id=$!
+
+i=1
+while [ $i -le 50 ]
+do
+cat <<EOF | java Client localhost 4444 5555 & 
+setmode U
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+exit
+cat <<EOF | java Client localhost 4444 5555 & 
+setmode T
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+purchase cameraman camera 1
+exit
+EOF
+i=$(( $i + 1 ))
+done	
+
+sleep 10
+
+cat <<EOF | java Client localhost 4444 5555  
+list
+search cameraman
+exit
+EOF
+
+echo "******Expected End Result******
+not crashing
+
+phone 20
+ps4 17
+camera 0
+laptop 15
+xbox 8
+"
+
+kill $id 
+
+
+
+

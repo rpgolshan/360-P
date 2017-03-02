@@ -46,19 +46,27 @@ public class Client {
       if (tokens[0].equals("setmode")) {
     	if(tokens[1].equals("T")){
     		transferType = 'T';
-    		returnMessage = "communication set to TCP";
     	}else if (tokens[1].equals("U")){
     		transferType = 'U';
-    		returnMessage = "communication seet to UDP";
     	}else{
-    		System.out.println("Invalid mode! please use 'T' for TCP or 'U' for UDP.\n");
+    		//System.out.println("Invalid mode! please use 'T' for TCP or 'U' for UDP.\n");
     	}
       }
       else if (tokens[0].equals("purchase")) {
-    	  if(transferType == 'T'){	  
-  		  	returnMessage = tcpSendandGet("purchase " + tokens[1] +" "+ tokens[2]+" "+tokens[3]);
-    	  }else{
-  		  	returnMessage = udpSendandGet("purchase " + tokens[1] +" "+ tokens[2]+" "+tokens[3]);
+    	  boolean valid = true;
+    	  try{
+    		  if(Integer.parseInt(tokens[3]) < 1){
+    			  valid = false;
+    		  }
+    	  }catch(ArrayIndexOutOfBoundsException e){
+    		  valid = false;
+    	  }
+    	  if(valid == true){
+	    	  if(transferType == 'T'){	  
+	  		  	returnMessage = tcpSendandGet("purchase " + tokens[1] +" "+ tokens[2]+" "+tokens[3]);
+	    	  }else{
+	  		  	returnMessage = udpSendandGet("purchase " + tokens[1] +" "+ tokens[2]+" "+tokens[3]);
+	    	  }	
     	  }
       } else if (tokens[0].equals("cancel")) {
     	  if(transferType == 'T'){
@@ -84,7 +92,8 @@ public class Client {
         System.out.println("ERROR: No such command");
     
       }
-System.out.println(returnMessage );
+System.out.flush();
+System.out.print(returnMessage );
     }
 sc.close();
   }
@@ -105,7 +114,7 @@ sc.close();
 		} catch (IOException e) {
 			
 		}
-	return inMessage;
+	return inMessage +"\n";
   }
   
 static String tcpSendandGet(String message){
@@ -122,6 +131,6 @@ static String tcpSendandGet(String message){
 	} catch(IOException e){
 		return inMessage;
 	}
-	return inMessage;
+	return inMessage+"\n";
   }
 }
