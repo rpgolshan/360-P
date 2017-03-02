@@ -6,7 +6,7 @@ java Server 4444 5555 inventory.txt &
 sleep 1
 id=$!
 cat <<EOF | java Client localhost 4444 5555 & 
-setmode T
+setmode U
 list
 purchase Jon phone 5
 purchase Jon laptop 5

@@ -171,9 +171,7 @@ public class Server extends Thread{
 	  }else if(request[0].equals("list")){
 		  outMessage = list();
 	  }
-
 	return outMessage;
-
   }
 
 

@@ -49,50 +49,53 @@ public class Client {
         // and display the name of the protocol that will be used in future  	  
     	if(tokens[1].equals("T")){
     		transferType = 'T';
-    		returnMessage = "communication set to TCP";
+    		//returnMessage = "communication set to TCP\n";
     	}else if (tokens[1].equals("U")){
     		transferType = 'U';
-    		returnMessage = "communication seet to UDP";
+    		//returnMessage = "communication set to UDP\n";
     	}else{
-    		System.out.println("Invalid mode! please use 'T' for TCP or 'U' for UDP.\n");
+    		System.out.println("Invalid mode! please use 'T' for TCP or 'U' for UDP.");
     	}
       }
       else if (tokens[0].equals("purchase")) {
         // TODO: send appropriate command to the server and display the
         // appropriate responses form the server
-		int valid = 1;
+		boolean valid = true;
 		try{
-			int tmp = Integer.ParseInt(tokens[3]);
+			int tmp = Integer.parseInt(tokens[3]);
 			if(tmp < 1){
-				valid = 0;	
+				valid = false;	
 			}
 		} catch (ArrayIndexOutOfBoundsException e){
-			valid = 0;
+			valid = false;
 		}
-	if(valid){
-    	  if(transferType == 'T'){	  
-  		  	returnMessage = tcpSendandGet("purchase " + tokens[1] +" "+ tokens[2]+" "+tokens[3]);
-    	  }else{
-    		  
-    	  }
-	}else{
-		returnMessage = "please enter a quantity greater than zero!";
-	}
+		if(valid){
+		  String message = "purchase " + tokens[1] +" "+ tokens[2]+" "+tokens[3];
+		  if(transferType == 'T'){	  
+			  returnMessage = tcpSendandGet(message);
+		  }else{
+			  returnMessage = udpSendandGet(message);
+		  }
+		}else{
+			returnMessage = "please enter a quantity greater than zero!\n";
+		}
       } else if (tokens[0].equals("cancel")) {
         // TODO: send appropriate command to the server and display the
         // appropriate responses form the server
+    	  String message = "cancel " + tokens[1];
     	  if(transferType == 'T'){
-    		  returnMessage = tcpSendandGet("cancel " + tokens[1]);
+    		  returnMessage = tcpSendandGet(message);
     	  }else{
-    		  
+    		  returnMessage = udpSendandGet(message);
     	  }
       } else if (tokens[0].equals("search")) {
         // TODO: send appropriate command to the server and display the
         // appropriate responses form the server
+    	  String message = "search " + tokens[1];
     	  if(transferType == 'T'){
-    		  returnMessage = tcpSendandGet("search " + tokens[1]);
+    		  returnMessage = tcpSendandGet(message);
     	  }else{
-    		  
+    		  returnMessage = udpSendandGet(message);
     	  }
       } else if (tokens[0].equals("list")) {
         // TODO: send appropriate command to the server and display the
@@ -100,7 +103,7 @@ public class Client {
     	  if(transferType == 'T'){
     		  returnMessage = tcpSendandGet("list");
     	  }else{
-    		  
+    		  returnMessage = udpSendandGet("list");
     	  }
       } else if (tokens[0].equals("exit")) {
    	break; 
@@ -108,7 +111,7 @@ public class Client {
         System.out.println("ERROR: No such command");
     
       }
-System.out.println(returnMessage );
+System.out.print(returnMessage);
     }
 sc.close();
   }
@@ -129,7 +132,7 @@ sc.close();
 		} catch (IOException e) {
 			
 		}
-	return inMessage;
+	return inMessage +"\n";
   }
   
 static String tcpSendandGet(String message){
@@ -141,7 +144,7 @@ static String tcpSendandGet(String message){
         String in;
        while ((in = inFromServer.readLine()) != null) {
            if (in.equals("DONE")) break;
-            inMessage += in + "\n"; 
+            inMessage += in+"\n";
        }
 	} catch(IOException e){
 		return inMessage;
