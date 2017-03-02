@@ -55,9 +55,6 @@ exit
 EOF
 
 echo "******Expected End Result******
-communication set to UCP
-communication set to UCP
-communication set to TDP
 Your order has been placed, 1 alex[x] camera 1
 Your order has been placed, 2 alex[x] camera 1
 Your order has been placed, 3 alex[x] camera 1
@@ -68,6 +65,14 @@ Your order has been placed, 7 alex[x] camera 1
 Your order has been placed, 8 alex[x] camera 1
 Your order has been placed, 9 alex[x] camera 1
 Your order has been placed, 10 alex[x] camera 1
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
+Not Available - Not enough items
 Not Available - Not enough items
 Not Available - Not enough items
 Not Available - Not enough items

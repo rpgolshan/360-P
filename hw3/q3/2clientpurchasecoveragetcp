@@ -44,6 +44,17 @@ EOF
 sleep 5
 
 echo "******Expected Output******
+list depends on execution order
+final list should be
+phone 10
+laptop 5
+camera 0
+ps4 7
+xbox 3
+'Not availabe - Not enough items' should appear 3 times
+'Not available - We do not ell this product' should appear 2 times
+
+
 "
 
 kill $id 

@@ -12,7 +12,6 @@ purchase jon phone 1
 purchase carl phone 1
 purchase carl phone 1
 cancel 1
-cancel 2
 exit
 EOF
 
@@ -40,11 +39,9 @@ exit
 EOF
 
 echo "******Expected End Result******
-communication set to TCP
-communication set to TCP
-
+final list should be:
 phone 17
-ps4 5
+ps4 17
 camera 10
 laptop 15
 xbox varies depending on how long it took jon to cancel xbox 7 order
