@@ -1,15 +1,42 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Server extends Thread{
     private int port;
     public Inventory inventory;
+    public int pid;
+    public int numNeighbors;
+    public ArrayList<NameEntry> neighbors;
 
-    public Server(int p, String fileName) {
-        port = p;
+    public Server(String fileName) {
         inventory = new Inventory();
-        createInventory(fileName);
+        neighbors = new ArrayList<NameEntry>();
+        try {
+            Scanner sc = new Scanner(new FileReader(fileName));
+            pid = sc.nextInt();
+            numNeighbors = sc.nextInt();
+            String invenFileName = sc.nextLine();
+            invenFileName = invenFileName.replace(" ", "");
+
+            /* read neighbors */
+            int i = 1;
+            while ( sc.hasNext ()) {
+                String line = sc.nextLine();
+                String[] s = line.split(":");
+                NameEntry neighbor = new NameEntry(i, s[0], Integer.parseInt(s[1]));
+                i++;
+                neighbors.add (neighbor);
+            }
+
+            port = neighbors.get(pid - 1).getPort(); //pid starts at 1
+
+            sc.close();
+            createInventory(invenFileName);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void run() {
@@ -42,18 +69,14 @@ public class Server extends Thread{
     }
 
   public static void main (String[] args) {
-    int tcpPort;
-    if (args.length != 2) {
-      System.out.println("ERROR: Provide 3 arguments");
-      System.out.println("\t(1) <tcpPort>: the port number for TCP connection");
-      System.out.println("\t(2) <file>: the file of inventory");
-
+    if (args.length != 1) {
+      System.out.println("ERROR: Provide an argument");
+      System.out.println("\t<file>: the file of the server config");
       System.exit(-1);
     }
-    tcpPort = Integer.parseInt(args[0]);
-    String fileName = args[1];
+    String fileName = args[0];
 
-    Server serTcp = new Server(tcpPort, fileName);
+    Server serTcp = new Server(fileName);
 //    System.out.println(ser.toString());
     serTcp.start();
   }
