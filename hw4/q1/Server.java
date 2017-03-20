@@ -9,7 +9,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Server extends Thread{
     public static ReentrantLock lock = new ReentrantLock();
-    private boolean isTcp = true;
     private int port;
     private static Hashtable<String, Integer> ht = new Hashtable<String, Integer>();
     private static Hashtable<String, ArrayList<Order>> userList = new Hashtable<String, ArrayList<Order>>();
@@ -32,36 +31,20 @@ public class Server extends Thread{
         }
          
     }
-    public Server(boolean tcp, int p) {
-        isTcp = tcp; 
+    public Server(int p) {
         port = p;
     }
 
     public void run() {
         ServerMultiThread.server = this;
-        if (isTcp) {
-             try (ServerSocket serverSocket = new ServerSocket(port)){
-                while (true) {
-                    new ServerMultiThread(serverSocket.accept()).start();  
-                }
-                
-            } catch (Exception e){
-                e.printStackTrace();
-                System.exit(1); 
+         try (ServerSocket serverSocket = new ServerSocket(port)){
+            while (true) {
+                new ServerMultiThread(serverSocket.accept()).start();  
             }
-
-        } else {
-            try (DatagramSocket serverSocket = new DatagramSocket(port)) 
-            {
-                while (true) {
-                    byte[] buff = new byte[4096];
-                    DatagramPacket packet = new DatagramPacket(buff, 4096);
-                    serverSocket.receive(packet);
-                    new ServerMultiThread(serverSocket, packet, buff).start();
-                }
-            } catch(Exception e){
-                e.printStackTrace();
-            }  
+            
+        } catch (Exception e){
+            e.printStackTrace();
+            System.exit(1); 
         }
    }
 
@@ -177,21 +160,17 @@ public class Server extends Thread{
 
   public static void main (String[] args) {
     int tcpPort;
-    int udpPort;
-    if (args.length != 3) {
+    if (args.length != 2) {
       System.out.println("ERROR: Provide 3 arguments");
       System.out.println("\t(1) <tcpPort>: the port number for TCP connection");
-      System.out.println("\t(2) <udpPort>: the port number for UDP connection");
-      System.out.println("\t(3) <file>: the file of inventory");
+      System.out.println("\t(2) <file>: the file of inventory");
 
       System.exit(-1);
     }
     tcpPort = Integer.parseInt(args[0]);
-    udpPort = Integer.parseInt(args[1]);
-    String fileName = args[2];
+    String fileName = args[1];
 
-    Server serTcp = new Server(true, tcpPort);
-    Server serUdp = new Server(false, udpPort);
+    Server serTcp = new Server(tcpPort);
     // parse the inventory file
 
     try {
@@ -209,10 +188,7 @@ public class Server extends Thread{
     }
 
 
-    // TODO: handle request from clients
-    
 //    System.out.println(ser.toString());
     serTcp.start();
-    serUdp.start();
   }
 }
