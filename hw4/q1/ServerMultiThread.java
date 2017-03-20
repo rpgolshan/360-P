@@ -8,9 +8,10 @@ import java.net.Socket;
 
 public class ServerMultiThread extends Thread {
     private Socket socket = null;
-    public static Server server = null;
-    public ServerMultiThread(Socket s) {
+    public Inventory inventory;
+    public ServerMultiThread(Socket s, Inventory inv) {
         socket = s; 
+        inventory = inv;
     }    
 
     public void run() {
@@ -20,7 +21,7 @@ public class ServerMultiThread extends Thread {
        {
            String input;
            while ((input = reader.readLine()) != null) {
-             String output = server.parseInput(input);
+             String output = parseInput(input);
              out.println(output);
              out.println("DONE");
            }
@@ -30,4 +31,38 @@ public class ServerMultiThread extends Thread {
            e.printStackTrace();
        }  
     }
+
+  public String parseInput(String inMessage){
+	  //process client request
+	  String[] request = inMessage.split("\\s+");
+	  String outMessage = "";
+	  if(request[0].equals("purchase")){
+		  try{
+			String username = request[1];
+		  	String product = request[2];
+		  	int quantity = Integer.parseInt(request[3]);
+		  	outMessage = inventory.purchase(username, product, quantity);
+		  } catch(NullPointerException | NumberFormatException f){
+			  //purchase message didn't have all the fields defined or defined correctly
+		  }
+	  }else if(request[0].equals("cancel")){
+		  try{
+			  int order = Integer.parseInt(request[1]);
+			  outMessage = inventory.cancel(order);
+		  } catch(NullPointerException | NumberFormatException f){
+			  //cancel message didn't specify an order or didn't give an integer
+		  }
+	  }else if(request[0].equals("search")){
+		  try{
+			  String username = request[1];
+			  outMessage = inventory.search(username);
+		  }catch(NullPointerException | NumberFormatException f){
+			  //search message did not specify a username
+		  }
+	  }else if(request[0].equals("list")){
+		  outMessage = inventory.list();
+	  }
+	return outMessage;
+  }
+
 }
