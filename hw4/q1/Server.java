@@ -10,6 +10,7 @@ public class Server extends Thread{
     public int numNeighbors;
     public ArrayList<NameEntry> neighbors;
     public Linker link;
+    public ServerSocket serverSocket;
 
     public Server(String fileName) {
         inventory = new Inventory();
@@ -36,14 +37,16 @@ public class Server extends Thread{
             createInventory(invenFileName);
             
             // time to calibrate servers
-            Linker link = new Linker(pid, port, neighbors);
+            serverSocket = new ServerSocket(port);
+            link = new Linker(pid, serverSocket, neighbors);
         } catch(Exception e){
             e.printStackTrace();
+            System.exit(1);
         }
     }
 
     public void run() {
-         try (ServerSocket serverSocket = new ServerSocket(port)){
+         try {
             while (true) {
                 new ServerMultiThread(serverSocket.accept(), inventory).start();  
             }

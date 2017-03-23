@@ -5,8 +5,8 @@ public class Connector {
 	public ObjectOutputStream[] dataOut;
     public int localport; 
     public int myId;
-    public Connector(int pid, int port) {
-        localport = port; 
+    public Connector(int pid, ServerSocket s) {
+        listener = s;
         myId = pid;
     }
 
@@ -17,7 +17,6 @@ public class Connector {
 		dataIn = new ObjectInputStream[numNeigh];
 		dataOut = new ObjectOutputStream[numNeigh];
 //		int localport = getLocalPort(myId);
-		listener = new ServerSocket(localport);
 		
 		/* accept connections from all the smaller processes */
 		for (NameEntry name : neighbors) {
