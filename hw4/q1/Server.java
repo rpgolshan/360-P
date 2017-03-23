@@ -9,6 +9,7 @@ public class Server extends Thread{
     public int pid;
     public int numNeighbors;
     public ArrayList<NameEntry> neighbors;
+    public Linker link;
 
     public Server(String fileName) {
         inventory = new Inventory();
@@ -29,11 +30,13 @@ public class Server extends Thread{
                 i++;
                 neighbors.add (neighbor);
             }
-
+            sc.close();
             port = neighbors.get(pid - 1).getPort(); //pid starts at 1
 
-            sc.close();
             createInventory(invenFileName);
+            
+            // time to calibrate servers
+            Linker link = new Linker(pid, port, neighbors);
         } catch(Exception e){
             e.printStackTrace();
         }

@@ -16,6 +16,10 @@ class NameEntry {
         return addr.getPort(); 
     }
 
+    public int getPid() {
+        return pid;
+    }
+
     public String toString() {
         return "PID = " + pid + "\tAddress = " + addr.toString() + "\n"; 
     }
