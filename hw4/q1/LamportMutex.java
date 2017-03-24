@@ -27,7 +27,6 @@ public class LamportMutex {
         ackList = new ArrayList<>();
 		link.sendMsgAll("request", clock);
 		numAcks = 0;
-//        link.setTimeoutAll();
         long start = System.currentTimeMillis();
 		while (((q.peek().pid != myId) || (numAcks < (link.n-1))) && (System.currentTimeMillis() - start < 100)) {
             try {
@@ -35,7 +34,6 @@ public class LamportMutex {
             } catch(Exception e){
             }
         }
- //       link.unsetTimeoutAll();
         if (numAcks < link.n -1) { /* a server died */
             link.removeNeighbors(ackList);     
         }
@@ -55,7 +53,10 @@ public class LamportMutex {
 			while (it.hasNext()){
 				if (it.next().getPid() == src) it.remove();
 			}
-            server.setInventory((Inventory) m.getMsgBuf().getLast());
+            Inventory inv = (Inventory) m.getMsgBuf().getLast();
+            server.setInventory(inv);
+            System.out.println(inv.ht);
+            
 		} else if (tag.equals("ack")) {
 			numAcks++;
             ackList.add(src);

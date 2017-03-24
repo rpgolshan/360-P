@@ -6,17 +6,20 @@ import java.util.Hashtable;
 
 public class Inventory implements Serializable {
 
-    private static Hashtable<String, Integer> ht = new Hashtable<String, Integer>();
-    private static Hashtable<String, ArrayList<Order>> userList = new Hashtable<String, ArrayList<Order>>();
-    private static ArrayList<Order> orderList = new ArrayList<Order>();
-    private static int orderId = 1;
+    public Hashtable<String, Integer> ht;
+    public Hashtable<String, ArrayList<Order>> userList;
+    public ArrayList<Order> orderList;
+    public int orderId;
     public static final long serialVersionUID = 50L;
 
     public Inventory() {
-
+        ht = new Hashtable<String, Integer>();
+        userList = new Hashtable<String, ArrayList<Order>>();
+        orderList = new ArrayList<Order>();
+        orderId = 1;
     }
 
-    public class Order {
+    public class Order implements Serializable {
         public String user;
         public String product; 
         public int quantity;

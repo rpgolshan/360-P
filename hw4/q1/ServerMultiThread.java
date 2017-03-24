@@ -5,11 +5,12 @@ import java.net.Socket;
 
 public class ServerMultiThread extends Thread {
     private Socket socket = null;
-    public static Inventory inventory;
+    public static volatile Inventory inventory;
     public LamportMutex lMutex;
     public ServerMultiThread(Socket s, Inventory inv, LamportMutex lm) {
         socket = s; 
-        inventory = inv;
+        if (inventory == null)
+            inventory = inv;
         lMutex = lm;
     }    
 

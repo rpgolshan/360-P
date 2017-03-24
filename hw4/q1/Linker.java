@@ -25,12 +25,8 @@ public class Linker {
 
 	public void sendMsg(int pid, Object ... objects) {	
 			try {
-                    if (!connector.link[pid-1].isConnected()){
-                     neighbors.remove(pid - 1);
-                     n = neighbors.size();
-                     return;
-                    }
                     ObjectOutputStream os = connector.dataOut[pid-1];
+                    os.reset();
                     os.writeObject(Integer.valueOf(objects.length));
                     for (Object object : objects) 
                         os.writeObject(object);
@@ -38,6 +34,8 @@ public class Linker {
 
             } catch (IOException e) {
                 if (debug)System.out.println(e);
+                 neighbors.remove(pid - 1);
+                 n = neighbors.size();
             }
 	}
 
@@ -49,9 +47,12 @@ public class Linker {
 
             try {
                 ObjectOutputStream os = connector.dataOut[i - 1];
+                os.reset();
                 os.writeObject(Integer.valueOf(objects.length));
-                for (Object object : objects) 
+                for (Object object : objects) {
                     os.writeObject(object);
+                }
+
                 os.flush();
             } catch (IOException e) {
                 if (debug) System.out.println(e);	
@@ -61,32 +62,17 @@ public class Linker {
         }
 	}
 
-    public void setTimeoutAll() {
-        for (int i = 1; i <= n; i++) {
-            if (i == myId) continue;
-            try {
-                connector.link[i - 1].setSoTimeout(100);
-            }catch(Exception e) {}
-        } 
-    }
-
-    public void unsetTimeoutAll() {
-         for (int i = 1; i <= n; i++) {
-            if (i == myId) continue;
-            try {
-                connector.link[i - 1].setSoTimeout(0);
-            }catch(Exception e) {}
-        } 
-    }
-
 	public Msg receiveMsg(int fromId) {
 		int i = fromId - 1;
 		try {
 			ObjectInputStream oi = connector.dataIn[i];
 			int numItems = ((Integer) oi.readObject()).intValue();
 			LinkedList<Object> recvdMessage = new LinkedList<Object>();
-            for (int j = 0; j < numItems; j++) 
-                recvdMessage.add(oi.readObject());
+            for (int j = 0; j < numItems; j++) {
+                Object o = oi.readObject();
+                System.out.println(o);
+                recvdMessage.add(o);
+            } 
 			String tag = (String) recvdMessage.removeFirst();
 			return new Msg(fromId, myId, tag, recvdMessage);
 		} catch (Exception e) { 
@@ -104,11 +90,6 @@ public class Linker {
         } 
         n = neighbors.size();
     }
-    
-//	public synchronized void executeMsg(Msg m) {	
-//		handleMsg(m, m.src, m.tag);
-//		notifyAll();
-//	}
     
 	public synchronized int getMyId() { return myId; }
 	public List<NameEntry> getNeighbors() { return neighbors; }

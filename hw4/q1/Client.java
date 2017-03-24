@@ -3,31 +3,38 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Client {
 	
 	static Socket TCPclientSocket = null;
-	static String hostAddress;
     static int tcpPort;
+    public static int serverNum = 1;
+    public static int numNeighbors;
+    public static ArrayList<NameEntry> neighbors;
 	
   public static void main (String[] args) {
     char transferType = 'T';
-    if (args.length != 2) {
-      System.out.println("ERROR: Provide 2 arguments");
-      System.out.println("\t(1) <hostAddress>: the address of the server");
-      System.out.println("\t(2) <tcpPort>: the port number for TCP connection");
-      System.exit(-1);
+
+    Scanner sc = new Scanner(System.in);
+    neighbors = new ArrayList<NameEntry>();
+    try {
+       numNeighbors = sc.nextInt();
+       sc.nextLine();
+        int i = 1;
+        for (int j = 0; j < numNeighbors; j++) {
+            String line = sc.nextLine();
+            String[] s = line.split(":");
+            NameEntry neighbor = new NameEntry(i, s[0], Integer.parseInt(s[1]));
+            i++;
+            neighbors.add (neighbor);
+        }
+    } catch(Exception e){
+        e.printStackTrace();
+        System.exit(1);
     }
 
-    hostAddress = args[0];
-    tcpPort = Integer.parseInt(args[1]);
-    try{
-    	TCPclientSocket = new Socket(hostAddress, tcpPort);
-    } catch(IOException e){
-    	System.out.print("");
-    }
-    Scanner sc = new Scanner(System.in);
     while(sc.hasNextLine()) {
       String cmd = sc.nextLine();
       String[] tokens = cmd.split(" ");
@@ -74,18 +81,26 @@ sc.close();
   
 static String tcpSendandGet(String message){
 	String inMessage = "";
+    
+    while (serverNum < numNeighbors + 1) {
+    
 	try{
+        TCPclientSocket = new Socket(neighbors.get(serverNum - 1).getAddress().getHostName(), neighbors.get(serverNum - 1).getPort());
 		DataOutputStream outToServer = new DataOutputStream(TCPclientSocket.getOutputStream());
 		outToServer.writeBytes(message + "\n");
+        TCPclientSocket.setSoTimeout(100);
 		BufferedReader inFromServer = new BufferedReader(new InputStreamReader(TCPclientSocket.getInputStream()));
         String in;
        while ((in = inFromServer.readLine()) != null) {
            if (in.equals("DONE")) break;
             inMessage += in + "\n"; 
        }
+        TCPclientSocket.setSoTimeout(0);
+       break;
 	} catch(IOException e){
-		return inMessage;
+        serverNum++;
 	}
+    }
 	return inMessage+"\n";
   }
 }
