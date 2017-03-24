@@ -25,8 +25,8 @@ public class LamportMutex {
 		clock++;
 		q.add(new Timestamp(clock, myId));
         ackList = new ArrayList<>();
-		link.sendMsgAll("request", clock);
 		numAcks = 0;
+		link.sendMsgAll("request", clock);
         long start = System.currentTimeMillis();
 		while (((q.peek().pid != myId) || (numAcks < (link.n-1))) && (System.currentTimeMillis() - start < 100)) {
             try {

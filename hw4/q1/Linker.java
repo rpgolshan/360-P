@@ -40,7 +40,9 @@ public class Linker {
 	}
 
 	public void sendMsgAll(Object ... objects) {	
-        for (NameEntry name : neighbors) {
+        Iterator<NameEntry> it = neighbors.iterator();
+        while (it.hasNext()){
+                NameEntry name = it.next();
                 int i = 0;
                 i = name.getPid();
                 if (i == myId) continue; 
@@ -55,9 +57,12 @@ public class Linker {
 
                 os.flush();
             } catch (IOException e) {
-                if (debug) System.out.println(e);	
-                 neighbors.remove(name);
-                 n = neighbors.size();
+                if (debug) {
+                    System.out.println(e);	
+                    e.printStackTrace();
+                }
+                it.remove();
+                 n--;
             }
         }
 	}
@@ -70,7 +75,6 @@ public class Linker {
 			LinkedList<Object> recvdMessage = new LinkedList<Object>();
             for (int j = 0; j < numItems; j++) {
                 Object o = oi.readObject();
-                System.out.println(o);
                 recvdMessage.add(o);
             } 
 			String tag = (String) recvdMessage.removeFirst();
@@ -82,11 +86,13 @@ public class Linker {
 	}
 
     public void removeNeighbors(ArrayList<Integer> comp) {
-        for (NameEntry name: neighbors) {
+        Iterator<NameEntry> it = neighbors.iterator();
+        while (it.hasNext()) {
+            NameEntry name = it.next();
             Integer i = name.getPid();
             if (i == myId) continue;
             if (!comp.contains(i))
-                neighbors.remove(name);
+                it.remove();
         } 
         n = neighbors.size();
     }
