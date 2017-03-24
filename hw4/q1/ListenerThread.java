@@ -10,9 +10,10 @@ public class ListenerThread extends Thread {
 	}
 	public void run() {
 		while (true) {
-			Msg m = comm.receiveMsg(channel);
-			if (m!=null)
-				lMutex.handleMsg(m, m.src, m.tag);
+            Msg m = comm.receiveMsg(channel);
+            if (m!=null)
+                lMutex.handleMsg(m, m.src, m.tag);
+            else return;
 		}
 	}
 }

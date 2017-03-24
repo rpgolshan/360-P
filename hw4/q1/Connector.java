@@ -59,7 +59,6 @@ public class Connector {
 
             }
         }
-
 	}
 	public void closeSockets() {
 		try {

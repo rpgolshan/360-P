@@ -13,11 +13,11 @@ public class Server extends Thread{
     public ServerSocket serverSocket;
     public LamportMutex lMutex;
 
-    public Server(String fileName) {
+    public Server() {
         inventory = new Inventory();
         neighbors = new ArrayList<NameEntry>();
         try {
-            Scanner sc = new Scanner(new FileReader(fileName));
+            Scanner sc = new Scanner(System.in);
             pid = sc.nextInt();
             numNeighbors = sc.nextInt();
             String invenFileName = sc.nextLine();
@@ -25,7 +25,7 @@ public class Server extends Thread{
 
             /* read neighbors */
             int i = 1;
-            while ( sc.hasNext ()) {
+            for (int j = 0; j < numNeighbors; j++) {
                 String line = sc.nextLine();
                 String[] s = line.split(":");
                 NameEntry neighbor = new NameEntry(i, s[0], Integer.parseInt(s[1]));
@@ -83,14 +83,9 @@ public class Server extends Thread{
     }
 
   public static void main (String[] args) {
-    if (args.length != 1) {
-      System.out.println("ERROR: Provide an argument");
-      System.out.println("\t<file>: the file of the server config");
-      System.exit(-1);
-    }
-    String fileName = args[0];
+//    String fileName = args[0];
 
-    Server serTcp = new Server(fileName);
+    Server serTcp = new Server();
 //    System.out.println(ser.toString());
     serTcp.start();
   }
