@@ -30,7 +30,7 @@ public class LamportMutex {
         long start = System.currentTimeMillis();
 		while (((q.peek().pid != myId) || (numAcks < (link.n-1))) && (System.currentTimeMillis() - start < 100)) {
             try {
-                wait();
+                wait(100);
             } catch(Exception e){
             }
         }
