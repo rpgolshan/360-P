@@ -55,7 +55,6 @@ public class LamportMutex {
 			}
             Inventory inv = (Inventory) m.getMsgBuf().getLast();
             server.setInventory(inv);
-            System.out.println(inv.ht);
             
 		} else if (tag.equals("ack")) {
 			numAcks++;
