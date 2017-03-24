@@ -1,14 +1,11 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.Socket;
 
 public class ServerMultiThread extends Thread {
     private Socket socket = null;
-    public Inventory inventory;
+    public static Inventory inventory;
     public LamportMutex lMutex;
     public ServerMultiThread(Socket s, Inventory inv, LamportMutex lm) {
         socket = s; 
@@ -45,7 +42,7 @@ public class ServerMultiThread extends Thread {
 		  	int quantity = Integer.parseInt(request[3]);
             lMutex.requestCS();
 		  	outMessage = inventory.purchase(username, product, quantity);
-            lMutex.releaseCS();
+            lMutex.releaseCS(inventory);
 		  } catch(NullPointerException | NumberFormatException f){
 			  //purchase message didn't have all the fields defined or defined correctly
 		  }
@@ -54,7 +51,7 @@ public class ServerMultiThread extends Thread {
 			  int order = Integer.parseInt(request[1]);
               lMutex.requestCS();
 			  outMessage = inventory.cancel(order);
-                lMutex.releaseCS();
+                lMutex.releaseCS(inventory);
 		  } catch(NullPointerException | NumberFormatException f){
 			  //cancel message didn't specify an order or didn't give an integer
 		  }
@@ -63,14 +60,14 @@ public class ServerMultiThread extends Thread {
 			  String username = request[1];
               lMutex.requestCS();
 			  outMessage = inventory.search(username);
-              lMutex.releaseCS();
+              lMutex.releaseCS(inventory);
 		  }catch(NullPointerException | NumberFormatException f){
 			  //search message did not specify a username
 		  }
 	  }else if(request[0].equals("list")){
           lMutex.requestCS();
 		  outMessage = inventory.list();
-          lMutex.releaseCS();
+          lMutex.releaseCS(inventory);
 	  }
 
 	return outMessage;

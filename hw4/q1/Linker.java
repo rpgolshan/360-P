@@ -6,22 +6,26 @@ public class Linker {
     public LamportMutex lMutex;
 	Connector connector = null;
 	public List<NameEntry> neighbors;
-	public Linker (int pid, ServerSocket s ,List<NameEntry> neighbors) throws Exception { 
+	public Linker (int pid, ServerSocket s ,List<NameEntry> ne) throws Exception { 
         myId = pid;
 		connector = new Connector(myId, s);
+        neighbors = ne;
+        n = neighbors.size();
 		connector.Connect(neighbors);
 	}
 
     public void init(LamportMutex lm){
         lMutex = lm;
-		for (NameEntry name : neighbors)
+		for (NameEntry name : neighbors) {
+            if (name.getPid() != myId)
 			(new ListenerThread(name.getPid(), this, lMutex)).start();		    	
+        }
 	}
 
 	public void sendMsg(int pid, Object ... objects) {	
 			try {
                     ObjectOutputStream os = connector.dataOut[pid-1];
-                    os.writeObject(Integer.valueOf(pid));
+                    os.writeObject(Integer.valueOf(objects.length));
                     for (Object object : objects) 
                         os.writeObject(object);
                     os.flush();
@@ -55,6 +59,7 @@ public class Linker {
 			String tag = (String) recvdMessage.removeFirst();
 			return new Msg(fromId, myId, tag, recvdMessage);
 		} catch (Exception e) { System.out.println(e);
+            e.printStackTrace();
 			close(); return null;		
 		}
 	}

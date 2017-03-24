@@ -1,14 +1,16 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-public class Inventory {
+public class Inventory implements Serializable {
 
     private static Hashtable<String, Integer> ht = new Hashtable<String, Integer>();
     private static Hashtable<String, ArrayList<Order>> userList = new Hashtable<String, ArrayList<Order>>();
     private static ArrayList<Order> orderList = new ArrayList<Order>();
     private static int orderId = 1;
+    public static final long serialVersionUID = 50L;
 
     public Inventory() {
 

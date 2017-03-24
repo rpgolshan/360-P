@@ -40,7 +40,7 @@ public class Server extends Thread{
             // time to calibrate servers
             serverSocket = new ServerSocket(port);
             link = new Linker(pid, serverSocket, neighbors);
-            lMutex = new LamportMutex(link, pid);
+            lMutex = new LamportMutex(link, pid, this);
             link.init(lMutex);
         } catch(Exception e){
             e.printStackTrace();
@@ -57,6 +57,11 @@ public class Server extends Thread{
             e.printStackTrace();
             System.exit(1); 
         }
+    }
+
+    public void setInventory(Inventory inv) {
+        inventory = inv;
+        ServerMultiThread.inventory = inv;
     }
 
     public void createInventory(String fileName) {
