@@ -11,6 +11,7 @@ public class Server extends Thread{
     public ArrayList<NameEntry> neighbors;
     public Linker link;
     public ServerSocket serverSocket;
+    public LamportMutex lMutex;
 
     public Server(String fileName) {
         inventory = new Inventory();
@@ -39,6 +40,8 @@ public class Server extends Thread{
             // time to calibrate servers
             serverSocket = new ServerSocket(port);
             link = new Linker(pid, serverSocket, neighbors);
+            lMutex = new LamportMutex(link, pid);
+            link.init(lMutex);
         } catch(Exception e){
             e.printStackTrace();
             System.exit(1);
@@ -48,7 +51,7 @@ public class Server extends Thread{
     public void run() {
          try {
             while (true) {
-                new ServerMultiThread(serverSocket.accept(), inventory).start();  
+                new ServerMultiThread(serverSocket.accept(), inventory, lMutex).start();  
             }
         } catch (Exception e){
             e.printStackTrace();

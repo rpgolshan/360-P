@@ -9,9 +9,11 @@ import java.net.Socket;
 public class ServerMultiThread extends Thread {
     private Socket socket = null;
     public Inventory inventory;
-    public ServerMultiThread(Socket s, Inventory inv) {
+    public LamportMutex lMutex;
+    public ServerMultiThread(Socket s, Inventory inv, LamportMutex lm) {
         socket = s; 
         inventory = inv;
+        lMutex = lm;
     }    
 
     public void run() {
@@ -41,28 +43,38 @@ public class ServerMultiThread extends Thread {
 			String username = request[1];
 		  	String product = request[2];
 		  	int quantity = Integer.parseInt(request[3]);
+            lMutex.requestCS();
 		  	outMessage = inventory.purchase(username, product, quantity);
+            lMutex.releaseCS();
 		  } catch(NullPointerException | NumberFormatException f){
 			  //purchase message didn't have all the fields defined or defined correctly
 		  }
 	  }else if(request[0].equals("cancel")){
 		  try{
 			  int order = Integer.parseInt(request[1]);
+              lMutex.requestCS();
 			  outMessage = inventory.cancel(order);
+                lMutex.releaseCS();
 		  } catch(NullPointerException | NumberFormatException f){
 			  //cancel message didn't specify an order or didn't give an integer
 		  }
 	  }else if(request[0].equals("search")){
 		  try{
 			  String username = request[1];
+              lMutex.requestCS();
 			  outMessage = inventory.search(username);
+              lMutex.releaseCS();
 		  }catch(NullPointerException | NumberFormatException f){
 			  //search message did not specify a username
 		  }
 	  }else if(request[0].equals("list")){
+          lMutex.requestCS();
 		  outMessage = inventory.list();
+          lMutex.releaseCS();
 	  }
+
 	return outMessage;
   }
+
 
 }
