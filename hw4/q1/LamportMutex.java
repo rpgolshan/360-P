@@ -28,9 +28,11 @@ public class LamportMutex {
 		numAcks = 0;
 		link.sendMsgAll("request", clock);
         long start = System.currentTimeMillis();
-		while (((q.peek().pid != myId) || (numAcks < (link.n-1))) && (System.currentTimeMillis() - start < 100)) {
+        long end = System.currentTimeMillis();
+		while (((q.peek().pid != myId) || (numAcks < (link.n-1))) && (end - start < 100)) {
             try {
                 wait(100);
+                end = System.currentTimeMillis();
             } catch(Exception e){
             }
         }
