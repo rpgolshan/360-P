@@ -3,7 +3,6 @@
 
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UID;
 import java.rmi.server.UnicastRemoteObject;
@@ -14,13 +13,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
         
-public class WorkNode implements Compute, Get, Cancel, Shutdown, ShutdownNow, isTerminated, InvokeAny, isDone {
+public class WorkNode implements RemoteMethods {
     
 	Hashtable<String,Future<?>> futures = new Hashtable();
 	
@@ -126,7 +121,7 @@ public class WorkNode implements Compute, Get, Cancel, Shutdown, ShutdownNow, is
         		registry = LocateRegistry.getRegistry();
         	}
             WorkNode obj = new WorkNode();
-            Compute stub = (Compute) UnicastRemoteObject.exportObject(obj, 0);//object/tcp port          
+            RemoteMethods stub = (RemoteMethods) UnicastRemoteObject.exportObject(obj, 0);//object/tcp port          
             registry.bind(UniqueID.toString(), stub);
         
             System.err.println("Node ready: " + UniqueID.toString());

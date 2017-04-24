@@ -56,7 +56,7 @@ public class DistributedFutureTask<T> implements Serializable, Future<Object> {
 
 	public void Execute() {
 		try { 		
-			Compute stub = (Compute) registry.lookup(node);
+			RemoteMethods stub = (RemoteMethods) registry.lookup(node);
 			if(isCallable){
 				stub.executeCallable(Ctask, myID);
 			}else{
@@ -71,7 +71,7 @@ public class DistributedFutureTask<T> implements Serializable, Future<Object> {
 	public Object get(){
 		Object result = null;
 		try { 
-        Get stub = (Get) registry.lookup(node);
+			RemoteMethods stub = (RemoteMethods) registry.lookup(node);
         result = stub.executeGet(myID);
         isDone = true;
          } catch (RemoteException | NotBoundException e) {
@@ -84,7 +84,7 @@ public class DistributedFutureTask<T> implements Serializable, Future<Object> {
 	public boolean cancel(boolean interruptable) {
 		boolean result = true;
 		try{
-	        Cancel stub = (Cancel) registry.lookup(node);
+			RemoteMethods stub = (RemoteMethods) registry.lookup(node);
 	        result = stub.executeCancel(myID, interruptable);
 	        cancelled = true;
 	        isDone = true;
@@ -132,7 +132,7 @@ public class DistributedFutureTask<T> implements Serializable, Future<Object> {
 		}
 		boolean result = false;
 		try{
-			isDone stub = (isDone) registry.lookup(node);
+			RemoteMethods stub = (RemoteMethods) registry.lookup(node);
 			result = stub.executeisDone(myID);
 		} catch (RemoteException e) {
 			e.printStackTrace();
