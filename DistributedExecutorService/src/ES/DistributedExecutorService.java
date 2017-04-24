@@ -238,7 +238,7 @@ public class DistributedExecutorService implements ExecutorService {
 			T result = null;
 			ArrayList<Callable<T>> list = new ArrayList<Callable<T>>(partition);
 			//System.out.println("INVOKING " + list.toString() + " ON " + node.UID);
-			InvokeAny stub = (InvokeAny) registry.lookup(node.UID);
+			RemoteMethods stub = (RemoteMethods) registry.lookup(node.UID);
 			result = stub.executeInvokeAny(list);
 			return result;
 		}
@@ -298,7 +298,7 @@ public class DistributedExecutorService implements ExecutorService {
 		}
 		for (Node node : NodeQ){
 			try{
-				isTerminated stub = (isTerminated) registry.lookup(node.UID);
+				RemoteMethods stub = (RemoteMethods) registry.lookup(node.UID);
 				boolean result = stub.executeIsTerminated();
 				if(result==false){
 					return false;
@@ -324,7 +324,7 @@ public class DistributedExecutorService implements ExecutorService {
 			public void run(){
 				for (Node node : NodeQ){
 					try{
-						Shutdown stub = (Shutdown) registry.lookup(node.UID);
+						RemoteMethods stub = (RemoteMethods) registry.lookup(node.UID);
 						stub.executeShutdown();
 					}catch(RemoteException e1){
 						//Node is gone
@@ -351,7 +351,7 @@ public class DistributedExecutorService implements ExecutorService {
 		for (Node node : NodeQ){
 			try{
 				//inList = null;
-				ShutdownNow stub = (ShutdownNow) registry.lookup(node.UID);
+				RemoteMethods stub = (RemoteMethods) registry.lookup(node.UID);
 				List<Runnable> inList = stub.executeShutdownNow();
 				resultList.addAll(inList);
 			}catch(RemoteException e1){
