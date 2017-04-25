@@ -7,6 +7,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.RemoteException;
 import java.rmi.server.UID;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
@@ -17,16 +18,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import distributedES.DistributedFutureTask;
 import distributedES.RemoteMethods;
         
 public class WorkNode implements RemoteMethods {
     
-	Hashtable<String,Future<?>> futures = new Hashtable();
-	
+	Hashtable<String,Future<?>> futures = new Hashtable<String, Future<?>>();
+	Lock ShutdownLock = new ReentrantLock();
 	static ExecutorService pool;
 	static UID UniqueID;
-	static int numTasks = 0;
+	static Integer numTasks = 0;
 	
 	
     public WorkNode() {
@@ -40,20 +44,24 @@ public class WorkNode implements RemoteMethods {
 	
 	@Override
 	public <T> void executeCallable(Callable<T> c, String DistribTaskID) throws RemoteException {
+		ShutdownLock.lock();
 		numTasks++;
 		Thread dec = new Thread(new Decrementer());
 		Future<T> f = pool.submit(c);
 		pool.submit(dec);
 		futures.put(DistribTaskID,f);//
+		ShutdownLock.unlock();
 	}
 	
 	@Override
 	public void executeRunnable(Runnable r, String DistribTaskID, Object result) throws RemoteException {
+		ShutdownLock.lock();
 		numTasks++;
 		Thread dec = new Thread(new Decrementer());
 		Future<Object> f = pool.submit(r, result);
 		pool.submit(dec);
 		futures.put(DistribTaskID, f);
+		ShutdownLock.unlock();
 	}
 
 	
@@ -79,20 +87,6 @@ public class WorkNode implements RemoteMethods {
 			return f.cancel(interruptable);
 	}
 		
-	@Override
-	public void executeShutdown() throws RemoteException {
-		pool.shutdown();
-	}
-	
-	@Override
-	public List<Runnable> executeShutdownNow() throws RemoteException {
-		return pool.shutdownNow();
-	}
-	
-	@Override
-	public boolean executeIsTerminated() throws RemoteException {
-		return pool.isTerminated();
-	}
 
 	@Override
 	public <T> T executeInvokeAny(Collection<? extends Callable<T>> list) throws RemoteException {
@@ -119,7 +113,69 @@ public class WorkNode implements RemoteMethods {
 		return f.isDone();
 	}
 
+
+	@Override
+	public int executeGetNode() throws RemoteException {
+		return numTasks;
+	}
 	
+	Lock numTaskLock = new ReentrantLock();
+	
+	public class Decrementer implements Runnable{
+
+		@Override
+		public void run() {
+			numTaskLock.lock();
+			try {
+				TimeUnit.MILLISECONDS.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			numTasks--;
+			numTaskLock.unlock();
+		}
+		
+	}
+	
+	@Override
+	public void executeShutdown(ArrayList<String> dFT) throws RemoteException {
+		for(String dft : dFT){
+			Future<?> f = futures.get(dft);
+			//f.cancel(false);
+		}
+	}
+
+
+	
+	@Override
+	public ArrayList<String> executeShutdownNow(ArrayList<String> dFT) throws RemoteException {
+		ShutdownLock.lock();
+		
+		ArrayList<String> notFin = new ArrayList<String>();
+		for(String dft : dFT){
+			
+			Future<?> f = futures.get(dft);
+	
+			if(f.cancel(true)){
+				notFin.add(dft);
+			}
+		}
+		ShutdownLock.unlock();
+		return notFin;
+	}
+
+	@Override
+	public boolean executeIsTerminated(ArrayList<String> dFT) throws RemoteException {
+		for(String dft : dFT){
+			Future<?> f = futures.get(dft);
+			if(!f.isDone()){
+				return false;
+			}
+		}
+		return true;
+	}
+
     public static void main(String args[]) {
         
         try {
@@ -151,20 +207,6 @@ public class WorkNode implements RemoteMethods {
             e.printStackTrace();
         }
     }
-
-	@Override
-	public int executeGetNode() throws RemoteException {
-		return numTasks;
-	}
-	
-	public class Decrementer implements Runnable{
-
-		@Override
-		public void run() {
-			numTasks--;
-		}
-		
-	}
 	
 	public class TaskTeller implements Runnable{
 
@@ -176,13 +218,14 @@ public class WorkNode implements RemoteMethods {
 				try {
 					TimeUnit.SECONDS.sleep(2);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
+					
 					e.printStackTrace();
 				}
 			}
 		}
 		
 	}
+
 
 
 }

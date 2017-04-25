@@ -1,20 +1,27 @@
 package distributedES;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class Node implements Comparable<Node> {
 
 	String UID;
 	//LinkedList<DistributedFutureTask> Queue;
 	int numTasks;
+	ArrayList<String>DFTs;
 	
 	Node(String UniqueID){
 		UID = UniqueID;
 		numTasks = 0;
+		DFTs = new ArrayList<String>();
 	}
 	
 	Node(String UniqueID, int numT){
 		UID = UniqueID;
 		numTasks = numT;
+		DFTs = new ArrayList<String>();
+	}
+	
+	void append(String s){
+		DFTs.add(s);
 	}
 	
 	@Override

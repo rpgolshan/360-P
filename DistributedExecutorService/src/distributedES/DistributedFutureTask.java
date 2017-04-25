@@ -16,7 +16,7 @@ public class DistributedFutureTask<T> implements Serializable, Future<Object> {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private boolean isCallable;
+	boolean isCallable;
 	private boolean cancelled;
 	private Object RunReturnObj;
 	private boolean isDone;
@@ -114,7 +114,6 @@ public class DistributedFutureTask<T> implements Serializable, Future<Object> {
 			isDone = true;
 		} catch(TimeoutException e){
 			//RAN OUT OF TIME
-			//System.out.println("out of time");
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		} 

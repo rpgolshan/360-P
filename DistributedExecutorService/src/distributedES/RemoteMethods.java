@@ -1,6 +1,7 @@
 package distributedES;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -21,11 +22,11 @@ public interface RemoteMethods extends Remote {
 
 	 boolean executeisDone(String DistribTaskID) throws RemoteException;
 	 
-	 boolean executeIsTerminated() throws RemoteException;
-	 
-	 void executeShutdown() throws RemoteException;
-	 
-	 List<Runnable> executeShutdownNow() throws RemoteException;
+	 boolean executeIsTerminated(ArrayList<String> dFT) throws RemoteException;
 	 
 	 int executeGetNode() throws RemoteException;
+
+	ArrayList<String> executeShutdownNow(ArrayList<String> dFT) throws RemoteException;
+
+	void executeShutdown(ArrayList<String> dFT) throws RemoteException;
 }
