@@ -1,3 +1,4 @@
+package distributedES;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Collection;
@@ -25,4 +26,6 @@ public interface RemoteMethods extends Remote {
 	 void executeShutdown() throws RemoteException;
 	 
 	 List<Runnable> executeShutdownNow() throws RemoteException;
+	 
+	 int executeGetNode() throws RemoteException;
 }

@@ -1,3 +1,4 @@
+package worknode;
 //a 'Server' that acts as the nodes for the ES
 //
 
@@ -14,6 +15,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import distributedES.RemoteMethods;
         
 public class WorkNode implements RemoteMethods {
     
@@ -21,22 +26,33 @@ public class WorkNode implements RemoteMethods {
 	
 	static ExecutorService pool;
 	static UID UniqueID;
+	static int numTasks = 0;
+	
 	
     public WorkNode() {
     	super();
-    	pool = Executors.newCachedThreadPool();	
+    	pool = Executors.newSingleThreadExecutor();
+    	Thread t = new Thread(new TaskTeller());
+    	t.start();
     	UniqueID = new UID();
+    	
     }
 	
 	@Override
 	public <T> void executeCallable(Callable<T> c, String DistribTaskID) throws RemoteException {
+		numTasks++;
+		Thread dec = new Thread(new Decrementer());
 		Future<T> f = pool.submit(c);
+		pool.submit(dec);
 		futures.put(DistribTaskID,f);//
 	}
 	
 	@Override
 	public void executeRunnable(Runnable r, String DistribTaskID, Object result) throws RemoteException {
+		numTasks++;
+		Thread dec = new Thread(new Decrementer());
 		Future<Object> f = pool.submit(r, result);
+		pool.submit(dec);
 		futures.put(DistribTaskID, f);
 	}
 
@@ -82,6 +98,7 @@ public class WorkNode implements RemoteMethods {
 	public <T> T executeInvokeAny(Collection<? extends Callable<T>> list) throws RemoteException {
 		T result = null;
 		try {
+			numTasks++;
 			result = pool.invokeAny(list);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -89,6 +106,9 @@ public class WorkNode implements RemoteMethods {
 		} catch (ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally{
+			Thread dec = new Thread(new Decrementer());
+			pool.submit(dec);
 		}
 		return result;
 	}
@@ -131,6 +151,38 @@ public class WorkNode implements RemoteMethods {
             e.printStackTrace();
         }
     }
+
+	@Override
+	public int executeGetNode() throws RemoteException {
+		return numTasks;
+	}
+	
+	public class Decrementer implements Runnable{
+
+		@Override
+		public void run() {
+			numTasks--;
+		}
+		
+	}
+	
+	public class TaskTeller implements Runnable{
+
+		@Override
+		public void run() {
+			
+			while(true){
+				System.out.println("~I have " + numTasks + " Tasks~");
+				try {
+					TimeUnit.SECONDS.sleep(2);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
 
 
 }

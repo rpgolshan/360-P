@@ -1,3 +1,4 @@
+package tests;
 import java.io.Serializable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;

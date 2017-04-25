@@ -1,9 +1,11 @@
+package distributedES;
 /* DISTRIBUTED EXECUTOR SERVICE
  * 
  * 
  */
 
 
+import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -11,29 +13,38 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.PriorityQueue;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DistributedExecutorService implements ExecutorService {
 
 	PriorityQueue<Node> NodeQ;
+	Lock PQlock;
 	boolean shutdown;
 	boolean terminated;
 	Registry registry;
 	String host;
 	int port;
+	Thread Qthread;
 	//TODO: change to have a custom registry name for host
 	//TODO: make the node work based on both how much work it was given how how much it completed?
     
-	DistributedExecutorService() {
+	
+	public DistributedExecutorService() {
 		this.host = null;
 		this.port = 0;
 		try {
@@ -44,7 +55,7 @@ public class DistributedExecutorService implements ExecutorService {
     	Restart();
     }
     
-    DistributedExecutorService(String host) {
+   public DistributedExecutorService(String host) {
     	this.host = host;
     	this.port = 0;
     	try {
@@ -53,9 +64,10 @@ public class DistributedExecutorService implements ExecutorService {
 			e.printStackTrace();
 		}
     	Restart();
+    	//StartQuery();
     }
     
-    DistributedExecutorService(int port) {
+    public DistributedExecutorService(int port) {
     	this.host = null;
     	this.port = port;
     	try {
@@ -64,9 +76,10 @@ public class DistributedExecutorService implements ExecutorService {
 			e.printStackTrace();
 		}
     	Restart();
+    	//StartQuery();
     }
     
-    DistributedExecutorService(String host, int port) {
+    public DistributedExecutorService(String host, int port) {
     	this.host = host;
     	this.port = port;
     	try {
@@ -75,16 +88,34 @@ public class DistributedExecutorService implements ExecutorService {
 			e.printStackTrace();
 		}
     	Restart();
+    	//StartQuery();
+    }
+   
+    void StartQuery (Lock l){
+    	Qthread = new Thread(new QueryNodeSize(l));
+    	Qthread.start();
     }
     
     //reallocates the registry and the NodeQ
     public boolean Restart(){
     	boolean result = false;
     	NodeQ = new PriorityQueue<Node>();
+    	PQlock = new ReentrantLock();
 		try {
 	    	String[] Nodes = registry.list();
+	    	System.out.println(Nodes.toString());
 	    	for (String node : Nodes){
-	    		NodeQ.add(new Node(node));
+	    		//NodeQ.add(new Node(node));
+	    		RemoteMethods stub;
+				try {
+					stub = (RemoteMethods) registry.lookup(node);
+					Node n = new Node(node,stub.executeGetNode());
+					NodeQ.add(n);
+				} catch (NotBoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			
 	    	}
 	    	result = true;
     	} catch (RemoteException e) {
@@ -93,6 +124,7 @@ public class DistributedExecutorService implements ExecutorService {
 		} finally{
 			shutdown = false;
 			terminated = false;
+			StartQuery(PQlock);
 		}
 		return result;
     }
@@ -206,6 +238,7 @@ public class DistributedExecutorService implements ExecutorService {
 	@Override
 	public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
 		if(shutdown) return null;	
+		PQlock.lock();
 		ArrayList<Callable<T>> originalList = new ArrayList<Callable<T>>(tasks);
 		//System.out.println("MaxLevel Invoke list: " + originalList.toString());
 		//System.out.println("NodeQ: " + NodeQ.toString());
@@ -219,10 +252,12 @@ public class DistributedExecutorService implements ExecutorService {
 		ExecutorService executor = Executors.newCachedThreadPool();//start up executor service
 		ArrayList<Callable<T>> nodeCallList = new ArrayList<Callable<T>>();//create callables that calls invokeAny remotely on each node
 		int index = 0;
+		
 		for(Node node : NodeQ){
 			nodeCallList.add(new partitionInvoker<T>(partitions.get(index), node));
 			index++;
 		}
+		PQlock.unlock();
 		return executor.invokeAny(nodeCallList);//call invokeany on the nodeCallList
 	}
 	
@@ -296,6 +331,7 @@ public class DistributedExecutorService implements ExecutorService {
 		if(terminated){
 			return true;
 		}
+		PQlock.lock();
 		for (Node node : NodeQ){
 			try{
 				RemoteMethods stub = (RemoteMethods) registry.lookup(node.UID);
@@ -310,6 +346,7 @@ public class DistributedExecutorService implements ExecutorService {
 			}
     	}
 		terminated = true;
+		PQlock.unlock();
 		return true;
 	}
 
@@ -322,6 +359,7 @@ public class DistributedExecutorService implements ExecutorService {
 		Thread ShutdownThread = new Thread(new Runnable(){
 			@Override
 			public void run(){
+				PQlock.lock();
 				for (Node node : NodeQ){
 					try{
 						RemoteMethods stub = (RemoteMethods) registry.lookup(node.UID);
@@ -332,8 +370,10 @@ public class DistributedExecutorService implements ExecutorService {
 						//Node might be gone
 					}
 		    	}
+				PQlock.unlock();
 			}
 		});
+		Qthread.interrupt();
 		ShutdownThread.start();
 	}
 
@@ -344,11 +384,14 @@ public class DistributedExecutorService implements ExecutorService {
 	shutdownNow on the node side will return a list of runnables back to this side
 	return the Union of all the List<Runnable>s from each node
 	 */
+
 	@Override
 	public List<Runnable> shutdownNow() {
 		shutdown = true;
 		ArrayList<Runnable> resultList = new ArrayList<Runnable>();
+		PQlock.lock();
 		for (Node node : NodeQ){
+			
 			try{
 				//inList = null;
 				RemoteMethods stub = (RemoteMethods) registry.lookup(node.UID);
@@ -360,6 +403,7 @@ public class DistributedExecutorService implements ExecutorService {
 				//Node might be gone
 			}
     	}
+		PQlock.unlock();
 		return resultList;
 	}
 
@@ -368,14 +412,32 @@ public class DistributedExecutorService implements ExecutorService {
 	@Override
 	public <T> Future<T> submit(Callable<T> task) {
 		if(shutdown) return null;
+		PQlock.lock();
 		UID UniqueID = new UID();
     	String DistribTaskID = UniqueID.toString();
     	Node n = NodeQ.poll();//get the top of the queue of nodes = the node with the fewest tasks
     	DistributedFutureTask<T> f = new DistributedFutureTask<T>(task);//create a new DFTask
     	f.Initialize(null, n.UID, DistribTaskID,registry);//initialize the task with the node it is connected to
-    	n.Queue.add(f);//add the DFTask to that node's queue
+    //	n.Queue.add(f);//add the DFTask to that node's queue
+    	RemoteMethods stub;
+		try {
+			stub = (RemoteMethods) registry.lookup(n.UID);
+			n.numTasks =  stub.executeGetNode();
+		} catch (AccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     	NodeQ.add(n);//re-add the node with the new DFTask back into the queue of nodes
-        f.Execute();//run the DFTask  
+    	
+        f.Execute();//run the DFTask 
+        PQlock.unlock();
         return (Future<T>) f;
 	}
 
@@ -383,14 +445,33 @@ public class DistributedExecutorService implements ExecutorService {
 	@Override
 	public Future<?> submit(Runnable task) {
 		if(shutdown) return null;
+		PQlock.lock();
 		UID UniqueID = new UID();
     	String DistribTaskID = UniqueID.toString();
     	Node n = NodeQ.poll();//get the top of the queue of nodes = the node with the fewest tasks
     	DistributedFutureTask f = new DistributedFutureTask(task);//create a new DFTask
     	f.Initialize(null, n.UID, DistribTaskID,registry);//initialize the task with the node it is connected to
-    	n.Queue.add(f);//add the DFTask to that node's queue
+  //  	n.Queue.add(f);//add the DFTask to that node's queue
+    	RemoteMethods stub;
+		try {
+			stub = (RemoteMethods) registry.lookup(n.UID);
+			n.numTasks =  stub.executeGetNode();
+		} catch (AccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     	NodeQ.add(n);//re-add the node with the new DFTask back into the queue of nodes
-        f.Execute();//run the DFTask  
+    	
+    	
+    	f.Execute();//run the DFTask  
+    	PQlock.unlock();
         return f;
 	}
 
@@ -398,15 +479,99 @@ public class DistributedExecutorService implements ExecutorService {
 	@Override
 	public <T> Future<T> submit(Runnable task, T retValue) {
 		if(shutdown) return null;
+		PQlock.lock();
 		UID UniqueID = new UID();
     	String DistribTaskID = UniqueID.toString();
     	Node n = NodeQ.poll();//get the top of the queue of nodes = the node with the fewest tasks
+
     	DistributedFutureTask<T> f = new DistributedFutureTask<T>(task, retValue);//create a new DFTask
-    	f.Initialize(null, n.UID, DistribTaskID,registry);//initialize the task with the node it is conencted to
-    	n.Queue.add(f);//add the DFTask to that node's queue
+    	f.Initialize(null, n.UID, DistribTaskID,registry);//initialize the task with the node it is conencted to	
+//    	n.Queue.add(f);//add the DFTask to that node's queue
+    	RemoteMethods stub;
+		try {
+			stub = (RemoteMethods) registry.lookup(n.UID);
+			n.numTasks =  stub.executeGetNode();
+		} catch (AccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     	NodeQ.add(n);//re-add the node with the new DFTask back into the queue of nodes
-        f.Execute();//run the DFTask  
+
+    	f.Execute();//run the DFTask 
+    	PQlock.unlock();
         return (Future<T>) f;
 	}
+	
+	public class QueryNodeSize implements Runnable{
+		
+		Lock PQLock;
+		boolean notShutdown;
+		
+		QueryNodeSize(Lock l){
+			PQLock = l;
+			notShutdown = true;
+		}
+		
+		void Shutdown(){
+			notShutdown = false;
+		}
+		
+		@Override
+		public void run() {
+			int index = 0;
+			
+			while(notShutdown){
+				
+				Integer NodeIDX = 0;
+		
+				PQLock.lock();
+				
+				PriorityQueue<Node> NewQ = new PriorityQueue<Node>();
+				for(Node node : NodeQ){
+						RemoteMethods stub;
+						try {
+							stub = (RemoteMethods) registry.lookup(node.UID);
+							Node n = new Node(node.UID,stub.executeGetNode());
+							NewQ.add(n);
+								} catch (AccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (RemoteException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (NotBoundException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						};
+				}
+				NodeQ = NewQ;
+				
+				PQLock.unlock();
+				
+				
+				try {
+					TimeUnit.MILLISECONDS.sleep(100);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				index++;
+				if(index>=10){
+					//System.out.println("NodeQ is " + NodeQ.toString());
+					index = 0;
+				}
+			}
+		}
+		
+	}
+	
+
 	
 }

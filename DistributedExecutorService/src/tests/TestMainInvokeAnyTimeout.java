@@ -1,3 +1,4 @@
+package tests;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -6,8 +7,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-public class TestMainInvokeAny {
+import distributedES.DistributedExecutorService;
+
+public class TestMainInvokeAnyTimeout {
 	static ExecutorService e;
 	
 	
@@ -26,18 +30,22 @@ public class TestMainInvokeAny {
 		tasks.add(t4);
 		tasks.add(t5);
 		//tasks.add(t6);
-		System.out.println("Tasks Have been Created, next going to invoke ANY");
+		System.out.println("Tasks Have been Created, next going to invoke ANY, but i'll give it 9 seconds");
 		String rec = null;
 		try {
-			rec = e.invokeAny(tasks);
+			rec = e.invokeAny(tasks, 9, TimeUnit.SECONDS);
+			System.out.println("We got " + rec + " from the invokeANY");
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} catch (ExecutionException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+		} catch (TimeoutException e1) {
+			// TODO Auto-generated catch block
+			System.out.println("didn't get it!");
 		}
-		System.out.println("We got " + rec + " from the invokeANY");
+		
 		
 		
 		

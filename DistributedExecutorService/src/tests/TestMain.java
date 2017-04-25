@@ -1,3 +1,4 @@
+package tests;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import distributedES.DistributedExecutorService;
 
 public class TestMain {
 	static ExecutorService e;

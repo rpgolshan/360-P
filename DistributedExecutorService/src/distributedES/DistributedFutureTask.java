@@ -1,3 +1,4 @@
+package distributedES;
 import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -72,8 +73,8 @@ public class DistributedFutureTask<T> implements Serializable, Future<Object> {
 		Object result = null;
 		try { 
 			RemoteMethods stub = (RemoteMethods) registry.lookup(node);
-        result = stub.executeGet(myID);
-        isDone = true;
+			result = stub.executeGet(myID);
+			isDone = true;
          } catch (RemoteException | NotBoundException e) {
 			e.printStackTrace();
 		}

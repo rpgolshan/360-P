@@ -1,3 +1,4 @@
+package tests;
 import java.io.Serializable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -13,7 +14,7 @@ public class WaitHelloWorld implements Callable<String>, Serializable{
 	public String call() {
 		System.out.println("Feeling Sleepy..");
 		try {
-			TimeUnit.SECONDS.sleep(10);
+			TimeUnit.SECONDS.sleep(1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			System.out.println("I've been interrupted! :(");
